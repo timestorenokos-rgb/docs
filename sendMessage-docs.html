@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sock.sendMessage() — Docs</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #7c6af7;
+    --accent2: #3dffa0;
+    --accent3: #ff6b6b;
+    --accent4: #ffd93d;
+    --text: #e2e2f0;
+    --muted: #5a5a78;
+    --code-bg: #0d0d18;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,106,247,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,106,247,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .container { max-width: 920px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+  header { padding: 60px 0 40px; border-bottom: 1px solid var(--border); }
+  .badge {
+    display: inline-block;
+    background: rgba(124,106,247,0.15);
+    border: 1px solid rgba(124,106,247,0.3);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    letter-spacing: 0.1em;
+  }
+  h1 { font-size: clamp(28px, 5vw, 42px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 12px; }
+  h1 span { color: var(--accent); }
+  .subtitle { color: var(--muted); font-size: 15px; font-family: 'JetBrains Mono', monospace; }
+  .layout { display: grid; grid-template-columns: 190px 1fr; gap: 48px; padding: 48px 0; align-items: start; }
+  nav { position: sticky; top: 24px; }
+  .nav-label { font-size: 10px; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace; }
+  nav a {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--muted); text-decoration: none;
+    font-size: 12px; font-family: 'JetBrains Mono', monospace;
+    padding: 5px 0 5px 12px;
+    border-left: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  nav a:hover { color: var(--text); border-left-color: var(--accent); }
+  nav a.new { color: var(--accent2); }
+  nav a.new::after {
+    content: 'new'; font-size: 9px;
+    background: rgba(61,255,160,0.12); border: 1px solid rgba(61,255,160,0.25);
+    color: var(--accent2); padding: 1px 5px; border-radius: 3px;
+  }
+  section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  h2 { font-size: 19px; font-weight: 700; letter-spacing: -0.01em; }
+  .tag-new {
+    font-size: 10px; background: rgba(61,255,160,0.12);
+    border: 1px solid rgba(61,255,160,0.25); color: var(--accent2);
+    padding: 2px 7px; border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace; font-weight: 400;
+  }
+  .desc { color: #8888a8; font-size: 13px; margin-bottom: 14px; font-family: 'JetBrains Mono', monospace; line-height: 1.7; }
+  .code-wrap { background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .code-bar {
+    background: #0f0f1a; border-bottom: 1px solid var(--border);
+    padding: 8px 16px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .code-bar span { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+  .copy-btn {
+    background: none; border: 1px solid var(--border);
+    color: var(--muted); font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; padding: 3px 10px; border-radius: 4px; cursor: pointer; transition: all 0.15s;
+  }
+  .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+  pre { padding: 18px 20px; overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.75; }
+  .k { color: #c792ea; } .s { color: #c3e88d; } .c { color: #4a4a66; }
+  .p { color: #89ddff; } .v { color: #f78c6c; } .f { color: #82aaff; }
+  .n { color: var(--text); }
+  .fields { margin-top: 12px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .field-row { display: grid; grid-template-columns: 155px 85px 1fr; border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .field-row:last-child { border-bottom: none; }
+  .field-row.header { background: #0f0f1a; color: var(--muted); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .field-cell { padding: 9px 14px; border-right: 1px solid var(--border); }
+  .field-cell:last-child { border-right: none; color: #8888a8; }
+  .field-name { color: var(--accent2); }
+  .field-type { color: #f78c6c; }
+  .opt { color: var(--muted); font-size: 9px; margin-left: 4px; }
+  .note {
+    margin-top: 12px; background: rgba(124,106,247,0.06);
+    border: 1px solid rgba(124,106,247,0.15); border-radius: 8px;
+    padding: 11px 15px; font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: #8888a8; line-height: 1.7;
+  }
+  .note strong { color: var(--accent); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  .divider-label {
+    text-align: center; position: relative; margin: 40px 0;
+  }
+  .divider-label::before {
+    content: ''; position: absolute; top: 50%; left: 0; right: 0;
+    height: 1px; background: var(--border);
+  }
+  .divider-label span {
+    position: relative; background: var(--bg);
+    padding: 0 16px; font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase;
+  }
+  @media (max-width: 680px) {
+    .layout { grid-template-columns: 1fr; }
+    nav { display: none; }
+    .field-row { grid-template-columns: 120px 70px 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="badge">github:TimeVan/Baileys — modified</div>
+    <h1><span>sock</span>.sendMessage()</h1>
+    <p class="subtitle">// semua content type yang didukung</p>
+  </header>
+
+  <div class="layout">
+    <nav>
+      <div class="nav-label">Native</div>
+      <a href="#text">text</a>
+      <a href="#image">image</a>
+      <a href="#video">video</a>
+      <a href="#audio">audio</a>
+      <a href="#document">document</a>
+      <a href="#sticker">sticker</a>
+      <a href="#location">location</a>
+      <a href="#contacts">contacts</a>
+      <a href="#react">react</a>
+      <a href="#poll">poll</a>
+      <a href="#forward">forward</a>
+      <a href="#delete">delete</a>
+      <a href="#edit">edit</a>
+      <a href="#pin">pin</a>
+      <a href="#groupInvite">groupInvite</a>
+      <div class="nav-label" style="margin-top:16px">Added</div>
+      <a href="#album" class="new">album</a>
+      <a href="#payment" class="new">payment</a>
+      <a href="#pollResult" class="new">pollResult</a>
+      <a href="#groupStory" class="new">groupStory</a>
+    </nav>
+
+    <main>
+
+      <section id="text">
+        <div class="section-header"><div class="dot" style="background:#7c6af7"></div><h2>text</h2></div>
+        <p class="desc">// Teks biasa, support link preview otomatis.</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>text.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">text</span>: <span class="s">'Halo bro!'</span>
+}, { <span class="p">quoted</span>: <span class="n">m</span> })
+
+<span class="c">// matiin link preview</span>
+<span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">text</span>: <span class="s">'https://example.com'</span>,
+  <span class="p">linkPreview</span>: <span class="k">null</span>
+})</pre>
+        </div>
+        <div class="note"><strong>+ options:</strong> <code>mentions: ['628xxx@s.whatsapp.net']</code> — tag user</div>
+      </section>
+
+      <section id="image">
+        <div class="section-header"><div class="dot" style="background:#ffd93d"></div><h2>image</h2></div>
+        <p class="desc">// Gambar dari URL, buffer, atau path file lokal.</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>image.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">image</span>: { <span class="p">url</span>: <span class="s">'https://example.com/img.jpg'</span> },
+  <span class="p">caption</span>: <span class="s">'Caption opsional'</span>
+})
+
+<span class="c">// dari buffer</span>
+<span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">image</span>: <span class="n">buffer</span>,
+  <span class="p">caption</span>: <span class="s">'dari buffer'</span>,
+  <span class="p">viewOnce</span>: <span class="k">true</span>  <span class="c">// view once</span>
+})</pre>
+        </div>
+      </section>
+
+      <section id="video">
+        <div class="section-header"><div class="dot" style="background:#ff6b6b"></div><h2>video</h2></div>
+        <p class="desc">// Video biasa atau GIF dengan <code>gifPlayback: true</code>.</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>video.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">video</span>: { <span class="p">url</span>: <span class="s">'https://example.com/vid.mp4'</span> },
+  <span class="p">caption</span>: <span class="s">'caption'</span>
+})
+
+<span class="c">// GIF</span>
+<span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">video</span>: { <span class="p">url</span>: <span class="s">'https://example.com/anim.mp4'</span> },
+  <span class="p">gifPlayback</span>: <span class="k">true</span>
+})</pre>
+        </div>
+      </section>
+
+      <section id="audio">
+        <div class="section-header"><div class="dot" style="background:#3dffa0"></div><h2>audio</h2></div>
+        <p class="desc">// Audio biasa atau voice note (<code>ptt: true</code>).</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>audio.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">audio</span>: { <span class="p">url</span>: <span class="s">'https://example.com/audio.mp3'</span> },
+  <span class="p">mimetype</span>: <span class="s">'audio/mpeg'</span>
+})
+
+<span class="c">// voice note</span>
+<span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">audio</span>: { <span class="p">url</span>: <span class="s">'https://example.com/voice.ogg'</span> },
+  <span class="p">mimetype</span>: <span class="s">'audio/ogg; codecs=opus'</span>,
+  <span class="p">ptt</span>: <span class="k">true</span>
+})</pre>
+        </div>
+      </section>
+
+      <section id="document">
+        <div class="section-header"><div class="dot" style="background:#82aaff"></div><h2>document</h2></div>
+        <p class="desc">// File/dokumen dengan nama file custom.</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>document.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">document</span>: { <span class="p">url</span>: <span class="s">'https://example.com/file.pdf'</span> },
+  <span class="p">mimetype</span>: <span class="s">'application/pdf'</span>,
+  <span class="p">fileName</span>: <span class="s">'laporan.pdf'</span>,
+  <span class="p">caption</span>: <span class="s">'nih filenya'</span>
+})</pre>
+        </div>
+      </section>
+
+      <section id="sticker">
+        <div class="section-header"><div class="dot" style="background:#c792ea"></div><h2>sticker</h2></div>
+        <p class="desc">// Stiker dari buffer atau URL (format webp).</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>sticker.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">sticker</span>: { <span class="p">url</span>: <span class="s">'https://example.com/sticker.webp'</span> }
+})
+
+<span class="c">// dari buffer</span>
+<span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">sticker</span>: <span class="n">buffer</span>
+})</pre>
+        </div>
+      </section>
+
+      <section id="location">
+        <div class="section-header"><div class="dot" style="background:#ffd93d"></div><h2>location</h2></div>
+        <p class="desc">// Kirim koordinat lokasi.</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>location.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">location</span>: {
+    <span class="p">degreesLatitude</span>: <span class="v">-5.147665</span>,
+    <span class="p">degreesLongitude</span>: <span class="v">119.432731</span>,
+    <span class="p">name</span>: <span class="s">'Makassar'</span>,
+    <span class="p">address</span>: <span class="s">'Sulawesi Selatan, Indonesia'</span>
+  }
+})</pre>
+        </div>
+      </section>
+
+      <section id="contacts">
+        <div class="section-header"><div class="dot" style="background:#3dffa0"></div><h2>contacts</h2></div>
+        <p class="desc">// Kirim 1 atau lebih kontak (vCard format).</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>contacts.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">contacts</span>: {
+    <span class="p">displayName</span>: <span class="s">'Primexuu'</span>,
+    <span class="p">contacts</span>: [{
+      <span class="p">displayName</span>: <span class="s">'Primexuu'</span>,
+      <span class="p">vcard</span>: <span class="s">`BEGIN:VCARD\nVERSION:3.0\nFN:Primexuu\nTEL;type=CELL:+628xxx\nEND:VCARD`</span>
+    }]
+  }
+})</pre>
+        </div>
+      </section>
+
+      <section id="react">
+        <div class="section-header"><div class="dot" style="background:#ff6b6b"></div><h2>react</h2></div>
+        <p class="desc">// React emoji ke pesan. <code>text: ''</code> = hapus reaksi.</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>react.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">react</span>: { <span class="p">text</span>: <span class="s">'🔥'</span>, <span class="p">key</span>: <span class="n">m</span>.<span class="p">key</span> }
+})
+
+<span class="c">// hapus reaksi</span>
+<span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">react</span>: { <span class="p">text</span>: <span class="s">''</span>, <span class="p">key</span>: <span class="n">m</span>.<span class="p">key</span> }
+})</pre>
+        </div>
+      </section>
+
+      <section id="poll">
+        <div class="section-header"><div class="dot" style="background:#7c6af7"></div><h2>poll</h2></div>
+        <p class="desc">// Buat polling. <code>selectableCount: 1</code> = single choice, <code>0</code> = multiple.</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>poll.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">poll</span>: {
+    <span class="p">name</span>: <span class="s">'Bot terbaik?'</span>,
+    <span class="p">values</span>: [<span class="s">'Axonic'</span>, <span class="s">'Other'</span>, <span class="s">'None'</span>],
+    <span class="p">selectableCount</span>: <span class="v">1</span>
+  }
+})</pre>
+        </div>
+      </section>
+
+      <section id="forward">
+        <div class="section-header"><div class="dot" style="background:#82aaff"></div><h2>forward</h2></div>
+        <p class="desc">// Forward pesan. <code>force: true</code> = paksa tampil label "Forwarded".</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>forward.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">forward</span>: <span class="n">m</span>,
+  <span class="p">force</span>: <span class="k">true</span>
+})</pre>
+        </div>
+      </section>
+
+      <section id="delete">
+        <div class="section-header"><div class="dot" style="background:#ff6b6b"></div><h2>delete</h2></div>
+        <p class="desc">// Hapus/revoke pesan.</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>delete.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">delete</span>: <span class="n">m</span>.<span class="p">key</span>
+})</pre>
+        </div>
+      </section>
+
+      <section id="edit">
+        <div class="section-header"><div class="dot" style="background:#c792ea"></div><h2>edit</h2></div>
+        <p class="desc">// Edit pesan yang sudah terkirim.</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>edit.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">text</span>: <span class="s">'Teks yang sudah diedit'</span>,
+  <span class="p">edit</span>: <span class="n">m</span>.<span class="p">key</span>
+})</pre>
+        </div>
+      </section>
+
+      <section id="pin">
+        <div class="section-header"><div class="dot" style="background:#ffd93d"></div><h2>pin</h2></div>
+        <p class="desc">// Pin/unpin pesan. <code>type: 1</code> = pin, <code>type: 2</code> = unpin.</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>pin.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">pin</span>: <span class="n">m</span>.<span class="p">key</span>,
+  <span class="p">type</span>: <span class="v">1</span>,
+  <span class="p">time</span>: <span class="v">86400</span>  <span class="c">// durasi dalam detik (86400 = 1 hari)</span>
+})</pre>
+        </div>
+      </section>
+
+      <section id="groupInvite">
+        <div class="section-header"><div class="dot" style="background:#3dffa0"></div><h2>groupInvite</h2></div>
+        <p class="desc">// Kirim card invite grup.</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>groupInvite.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">groupInvite</span>: {
+    <span class="p">jid</span>: <span class="s">'120363xxxxxx@g.us'</span>,
+    <span class="p">subject</span>: <span class="s">'ASHVYR CLAN'</span>,
+    <span class="p">inviteCode</span>: <span class="s">'xxxxxxxx'</span>,
+    <span class="p">inviteExpiration</span>: <span class="v">0</span>,
+    <span class="p">text</span>: <span class="s">'Join grup!'</span>
+  }
+})</pre>
+        </div>
+      </section>
+
+      <!-- DIVIDER -->
+      <div class="divider-label"><span>added types</span></div>
+
+      <section id="album">
+        <div class="section-header"><div class="dot" style="background:#3dffa0"></div><h2>album <span class="tag-new">new</span></h2></div>
+        <p class="desc">// Kirim multiple foto/video sekaligus sebagai album.</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>album.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">album</span>: [
+    { <span class="p">image</span>: { <span class="p">url</span>: <span class="s">'https://example.com/1.jpg'</span> } },
+    { <span class="p">image</span>: { <span class="p">url</span>: <span class="s">'https://example.com/2.jpg'</span> }, <span class="p">caption</span>: <span class="s">'foto 2'</span> },
+    { <span class="p">video</span>: { <span class="p">url</span>: <span class="s">'https://example.com/3.mp4'</span> } }
+  ]
+}, { <span class="p">quoted</span>: <span class="n">m</span> })</pre>
+        </div>
+        <div class="fields">
+          <div class="field-row header"><div class="field-cell">field</div><div class="field-cell">type</div><div class="field-cell">keterangan</div></div>
+          <div class="field-row">
+            <div class="field-cell"><span class="field-name">album</span></div>
+            <div class="field-cell"><span class="field-type">Array</span></div>
+            <div class="field-cell">Array of <code>{ image }</code> / <code>{ video }</code>, min 2 item</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="payment">
+        <div class="section-header"><div class="dot" style="background:#ffd93d"></div><h2>payment <span class="tag-new">new</span></h2></div>
+        <p class="desc">// Request pembayaran ke user.</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>payment.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">payment</span>: {
+    <span class="p">amount</span>: <span class="v">50000</span>,
+    <span class="p">currency</span>: <span class="s">'IDR'</span>,
+    <span class="p">note</span>: <span class="s">'Bayar dong bro'</span>,
+    <span class="p">from</span>: <span class="s">'628xxx@s.whatsapp.net'</span>,
+    <span class="p">expiry</span>: <span class="v">0</span>
+  }
+}, { <span class="p">quoted</span>: <span class="n">m</span> })</pre>
+        </div>
+        <div class="fields">
+          <div class="field-row header"><div class="field-cell">field</div><div class="field-cell">type</div><div class="field-cell">keterangan</div></div>
+          <div class="field-row"><div class="field-cell"><span class="field-name">amount</span></div><div class="field-cell"><span class="field-type">number</span></div><div class="field-cell">Nominal (rupiah untuk IDR)</div></div>
+          <div class="field-row"><div class="field-cell"><span class="field-name">currency</span></div><div class="field-cell"><span class="field-type">string</span></div><div class="field-cell">ISO 4217 — default: <code>'IDR'</code></div></div>
+          <div class="field-row"><div class="field-cell"><span class="field-name">note <span class="opt">opt</span></span></div><div class="field-cell"><span class="field-type">string</span></div><div class="field-cell">Catatan payment</div></div>
+          <div class="field-row"><div class="field-cell"><span class="field-name">from <span class="opt">opt</span></span></div><div class="field-cell"><span class="field-type">string</span></div><div class="field-cell">JID yang diminta bayar</div></div>
+          <div class="field-row"><div class="field-cell"><span class="field-name">expiry <span class="opt">opt</span></span></div><div class="field-cell"><span class="field-type">number</span></div><div class="field-cell">Unix timestamp, default: <code>0</code> (no expiry)</div></div>
+        </div>
+      </section>
+
+      <section id="pollResult">
+        <div class="section-header"><div class="dot" style="background:#c792ea"></div><h2>pollResult <span class="tag-new">new</span></h2></div>
+        <p class="desc">// Snapshot hasil voting poll (beda dengan <code>poll</code> biasa).</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>pollResult.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">pollResult</span>: {
+    <span class="p">name</span>: <span class="s">'Bot terbaik?'</span>,
+    <span class="p">pollVotes</span>: [
+      { <span class="p">optionName</span>: <span class="s">'Axonic'</span>, <span class="p">optionVoteCount</span>: <span class="v">42</span> },
+      { <span class="p">optionName</span>: <span class="s">'Other'</span>,  <span class="p">optionVoteCount</span>: <span class="v">5</span>  }
+    ]
+  }
+}, { <span class="p">quoted</span>: <span class="n">m</span> })</pre>
+        </div>
+        <div class="fields">
+          <div class="field-row header"><div class="field-cell">field</div><div class="field-cell">type</div><div class="field-cell">keterangan</div></div>
+          <div class="field-row"><div class="field-cell"><span class="field-name">name</span></div><div class="field-cell"><span class="field-type">string</span></div><div class="field-cell">Judul poll</div></div>
+          <div class="field-row"><div class="field-cell"><span class="field-name">pollVotes</span></div><div class="field-cell"><span class="field-type">Array</span></div><div class="field-cell"><code>{ optionName, optionVoteCount }</code></div></div>
+        </div>
+      </section>
+
+      <section id="groupStory">
+        <div class="section-header"><div class="dot" style="background:#ff6b6b"></div><h2>groupStatusMessage <span class="tag-new">new</span></h2></div>
+        <p class="desc">// Group story / status grup (groupStatusMessageV2).</p>
+        <div class="code-wrap">
+          <div class="code-bar"><span>groupStory.js</span><button class="copy-btn" onclick="copy(this)">copy</button></div>
+          <pre><span class="c">// dengan media</span>
+<span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">groupStatusMessage</span>: {
+    <span class="p">image</span>: { <span class="p">url</span>: <span class="s">'https://example.com/img.jpg'</span> },
+    <span class="p">caption</span>: <span class="s">'Story grup!'</span>
+  }
+})
+
+<span class="c">// dengan raw message object (skip generate)</span>
+<span class="k">await</span> <span class="n">sock</span>.<span class="f">sendMessage</span>(<span class="n">m</span>.<span class="p">chat</span>, {
+  <span class="p">groupStatusMessage</span>: {
+    <span class="p">message</span>: { <span class="p">imageMessage</span>: { <span class="c">/* ... */</span> } }
+  }
+})</pre>
+        </div>
+        <div class="note">Kalau ada property <strong><code>.message</code></strong> → langsung di-relay as-is.<br>Kalau tidak ada → di-generate dulu via <code>generateWAMessageContent</code>.</div>
+      </section>
+
+    </main>
+  </div>
+</div>
+<script>
+function copy(btn) {
+  const pre = btn.closest('.code-wrap').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'copied!';
+    setTimeout(() => btn.textContent = 'copy', 1500);
+  });
+}
+</script>
+</body>
+</html>
