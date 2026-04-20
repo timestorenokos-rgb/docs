@@ -1,0 +1,17 @@
+{
+  "name": "time-gateway",
+  "version": "1.0.0",
+  "description": "Time Gateway - Orderkuota API Unofficial",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "qrcode": "^1.5.3",
+    "node-upload-images": "^1.0.0"
+  },
+  "author": "Time Van AshVyr",
+  "license": "ISC"
+}

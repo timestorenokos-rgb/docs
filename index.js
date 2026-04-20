@@ -32,7 +32,8 @@ class OrderKuota {
       'Host': OrderKuota.HOST,
       'User-Agent': OrderKuota.USER_AGENT,
       'Content-Type': 'application/x-www-form-urlencoded',
-      'accept-encoding': 'gzip'
+      'accept-encoding': 'gzip',
+      'X-Forwarded-For': "50.50.50.120"   
     };
   }
 
@@ -123,11 +124,8 @@ app.get('/', async (req, res) => {
   const { action, apikey, username, password, otp, token, amount } = req.query;
 
   if (!action) {
-    return res.json({
-      status: true,
-      message: "API is Running 🚀"
-    });
-  }
+  return res.sendFile(__dirname + '/index.html');
+}
 
   if (!VALID_APIKEYS.includes(apikey)) {
     return res.status(401).json({ status: false, error: 'Apikey invalid' });
